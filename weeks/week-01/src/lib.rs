@@ -33,11 +33,11 @@ impl MockTransaction {
         // 2. Store `amount_sats` and `confirmed` exactly as they are passed in.
         // 3. Return a `MockTransaction` with all five fields filled.
         MockTransaction {
-            txid:txid.to_string(),
-            sender:sender.to_string(),
-            recipient:recipient.to_string(),
-            amount_sats:amount_sats,
-            confirmed:confirmed
+            txid: txid.to_string(),
+            sender: sender.to_string(),
+            recipient: recipient.to_string(),
+            amount_sats: amount_sats,
+            confirmed: confirmed,
         }
     }
 }
@@ -47,14 +47,14 @@ pub fn genesis_hash() -> &'static str {
     // Steps:
     // 1. Return the `GENESIS_HASH` constant.
     // 2. Do not allocate a new string.
-    return GENESIS_HASH
+    return GENESIS_HASH;
 }
 
 /// Return the hardcoded Unix timestamp for the Bitcoin genesis block.
 pub fn genesis_timestamp() -> u64 {
     // Steps:
     // 1. Return the `GENESIS_TIMESTAMP` constant.
-    return GENESIS_TIMESTAMP
+    return GENESIS_TIMESTAMP;
 }
 
 /// Return the genesis block reward in satoshis.
@@ -62,7 +62,7 @@ pub fn genesis_reward_sats() -> u64 {
     // Steps:
     // 1. Return the `GENESIS_REWARD_SATS` constant.
     // 2. Keep the unit in satoshis, not BTC.
-    return GENESIS_REWARD_SATS
+    return GENESIS_REWARD_SATS;
 }
 
 /// Return the newspaper headline embedded in the genesis block coinbase data.
@@ -70,7 +70,7 @@ pub fn genesis_message() -> &'static str {
     // Steps:
     // 1. Return the `GENESIS_MESSAGE` constant.
     // 2. Do not allocate a new string.
-    return GENESIS_MESSAGE
+    return GENESIS_MESSAGE;
 }
 
 /// Build a human-readable summary string containing the genesis hash,
@@ -114,11 +114,7 @@ pub fn format_sats(sats: u64) -> String {
     // 4. Example: 1 sat becomes "0.00000001 BTC".
     let sats_per_btc = sats / 100_000_000;
     let fractional_sats = sats % 100_000_000;
-    format!(
-        "{:01}.{:08} BTC",
-        sats_per_btc,
-        fractional_sats
-    )
+    format!("{:01}.{:08} BTC", sats_per_btc, fractional_sats)
 }
 
 /// Count transactions where `confirmed` is true.
@@ -172,7 +168,11 @@ pub fn filter_by_sender(transactions: &[MockTransaction], sender: &str) -> Vec<M
     // 2. Walk through the input slice in order.
     // 3. Clone and push transactions whose `sender` equals the requested sender.
     // 4. Return the new vector.
-    transactions.iter().filter(|tx| tx.sender == sender).cloned().collect()
+    transactions
+        .iter()
+        .filter(|tx| tx.sender == sender)
+        .cloned()
+        .collect()
 }
 
 /// Return cloned transactions whose recipient exactly matches `recipient`.
@@ -187,7 +187,11 @@ pub fn filter_by_recipient(
     // 2. Walk through the input slice in order.
     // 3. Clone and push transactions whose `recipient` equals the requested recipient.
     // 4. Return the new vector.
-    transactions.iter().filter(|tx| tx.recipient == recipient).cloned().collect()
+    transactions
+        .iter()
+        .filter(|tx| tx.recipient == recipient)
+        .cloned()
+        .collect()
 }
 
 /// Return cloned transactions that are confirmed.
@@ -198,7 +202,11 @@ pub fn filter_confirmed(transactions: &[MockTransaction]) -> Vec<MockTransaction
     // 1. Create a new vector.
     // 2. Add cloned transactions only when `confirmed` is true.
     // 3. Keep the same order as the input slice.
-    transactions.iter().filter(|tx| tx.confirmed).cloned().collect()
+    transactions
+        .iter()
+        .filter(|tx| tx.confirmed)
+        .cloned()
+        .collect()
 }
 
 /// Return all transaction ids as owned strings in their original order.
@@ -230,7 +238,11 @@ pub fn amounts_over(transactions: &[MockTransaction], minimum_sats: u64) -> Vec<
     // 2. For each transaction, compare `amount_sats` with `minimum_sats`.
     // 3. Push only amounts strictly greater than the minimum.
     // 4. Do not include amounts equal to the minimum.
-    transactions.iter().filter(|tx| tx.amount_sats > minimum_sats).map(|tx| tx.amount_sats).collect()
+    transactions
+        .iter()
+        .filter(|tx| tx.amount_sats > minimum_sats)
+        .map(|tx| tx.amount_sats)
+        .collect()
 }
 
 /// Build a balance map from confirmed transactions only.
@@ -259,7 +271,11 @@ pub fn address_received_total(transactions: &[MockTransaction], address: &str) -
     // 1. Look only at confirmed transactions.
     // 2. Add `amount_sats` when `recipient == address`.
     // 3. Return 0 if there are no matches.
-    transactions.iter().filter(|tx| tx.confirmed && tx.recipient == address).map(|tx| tx.amount_sats).sum()
+    transactions
+        .iter()
+        .filter(|tx| tx.confirmed && tx.recipient == address)
+        .map(|tx| tx.amount_sats)
+        .sum()
 }
 
 /// Sum confirmed amounts sent by `address`.
@@ -268,7 +284,11 @@ pub fn address_sent_total(transactions: &[MockTransaction], address: &str) -> u6
     // 1. Look only at confirmed transactions.
     // 2. Add `amount_sats` when `sender == address`.
     // 3. Return 0 if there are no matches.
-    transactions.iter().filter(|tx| tx.confirmed && tx.sender == address).map(|tx| tx.amount_sats).sum()
+    transactions
+        .iter()
+        .filter(|tx| tx.confirmed && tx.sender == address)
+        .map(|tx| tx.amount_sats)
+        .sum()
 }
 
 /// Return confirmed received total minus confirmed sent total for `address`.
@@ -277,7 +297,8 @@ pub fn net_balance_change(transactions: &[MockTransaction], address: &str) -> i6
     // 1. Reuse or mirror the received-total and sent-total calculations.
     // 2. Convert both totals to `i64`.
     // 3. Return `received - sent`.
-    address_received_total(transactions, address) as i64 - address_sent_total(transactions, address) as i64
+    address_received_total(transactions, address) as i64
+        - address_sent_total(transactions, address) as i64
 }
 
 /// Return true when the transaction sender is exactly `"coinbase"`.

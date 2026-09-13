@@ -36,7 +36,7 @@ impl From<std::io::Error> for BtcLibError {
         // Steps:
         // 1. Convert the IO error into a string with `to_string()`.
         // 2. Store the message in `BtcLibError::Io`.
-        todo!()
+        BtcLibError::Io(error.to_string())
     }
 }
 
@@ -46,6 +46,6 @@ impl From<serde_json::Error> for BtcLibError {
         // Steps:
         // 1. Convert the serde_json error into a string.
         // 2. Store the message in `BtcLibError::Serialization`.
-        todo!()
+        BtcLibError::Serialization(error.to_string())
     }
 }

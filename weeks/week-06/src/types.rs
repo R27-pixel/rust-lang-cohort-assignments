@@ -136,7 +136,27 @@ impl Transaction {
         // 3. Return `MissingUtxo(label)` if any input is unknown.
         // 4. Sum input values and subtract output value.
         // 5. Return `InvalidSpend(txid)` if outputs exceed inputs.
-        todo!()
+        if self.is_coinbase() {
+            return Ok(0);
+        }
+
+        let mut input_total = 0u64;
+        for input in &self.inputs {
+            let outpoint = input.outpoint();
+            let value = lookup(&outpoint).ok_or_else(|| {
+                MinerError::MissingUtxo(format!("{}:{}", outpoint.txid, outpoint.vout))
+            })?;
+            input_total = input_total
+                .checked_add(value)
+                .ok_or_else(|| MinerError::InvalidSpend(self.txid.clone()))?;
+        }
+
+        let output_total = self.total_output_value();
+        if output_total > input_total {
+            return Err(MinerError::InvalidSpend(self.txid.clone()));
+        }
+
+        Ok(input_total - output_total)
     }
 }
 
@@ -152,7 +172,15 @@ impl Hashable for Transaction {
         // 3. Append `|outputs:`.
         // 4. Append each output as `<value_sats>:<recipient>;`.
         // 5. Return the final string.
-        todo!()
+        let mut material = format!("tx:{}|inputs:", self.txid);
+        for input in &self.inputs {
+            material.push_str(&format!("{}:{};", input.previous_txid, input.previous_vout));
+        }
+        material.push_str("|outputs:");
+        for output in &self.outputs {
+            material.push_str(&format!("{}:{};", output.value_sats, output.recipient));
+        }
+        material
     }
 }
 
@@ -166,6 +194,17 @@ impl Hashable for Block {
         // 1. Start with previous hash, height, merkle root, timestamp, and nonce.
         // 2. Append every transaction id followed by `;`.
         // 3. Return the final string.
-        todo!()
+        let mut material = format!(
+            "block:{}|height:{}|merkle:{}|time:{}|nonce:{}|txs:",
+            self.header.previous_block_hash,
+            self.height,
+            self.header.merkle_root,
+            self.header.timestamp,
+            self.header.nonce
+        );
+        for transaction in &self.transactions {
+            material.push_str(&format!("{};", transaction.txid));
+        }
+        material
     }
 }

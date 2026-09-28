@@ -24,6 +24,6 @@ impl From<std::io::Error> for NodeError {
         // Steps:
         // 1. Convert `error` into a string.
         // 2. Store it in `NodeError::Io`.
-        todo!()
+        Self::Io(error.to_string())
     }
 }

@@ -16,7 +16,11 @@ impl NodeState {
         // 2. Store it as the only block.
         // 3. Start with an empty peer map.
         // 4. Return the state.
-        todo!()
+        genesis.validate_against_tip(None)?;
+        Ok(Self {
+            chain: vec![genesis],
+            peers: BTreeMap::new(),
+        })
     }
 
     /// Return the current chain height.
@@ -24,7 +28,7 @@ impl NodeState {
         // Steps:
         // 1. Return the height of the last block.
         // 2. Return 0 if the chain is somehow empty.
-        todo!()
+        self.chain.last().map_or(0, |block| block.height)
     }
 
     /// Return the current tip hash.
@@ -32,7 +36,7 @@ impl NodeState {
         // Steps:
         // 1. Return the last block's hash as `&str`.
         // 2. Return `None` for an empty chain.
-        todo!()
+        self.chain.last().map(|block| block.hash.as_str())
     }
 
     /// Add or update a peer and return the total peer count.
@@ -41,7 +45,14 @@ impl NodeState {
         // 1. Insert `address` into the peer map.
         // 2. Store the current node height as `last_seen_height`.
         // 3. Return `self.peers.len()`.
-        todo!()
+        self.peers.insert(
+            address.to_string(),
+            PeerInfo {
+                address: address.to_string(),
+                last_seen_height: self.height(),
+            },
+        );
+        self.peers.len()
     }
 
     /// Return peer addresses in deterministic sorted order.
@@ -50,7 +61,7 @@ impl NodeState {
         // 1. Iterate over the `BTreeMap` keys.
         // 2. Clone each address into a vector.
         // 3. Return the vector.
-        todo!()
+        self.peers.keys().cloned().collect()
     }
 
     /// Append a block if it connects to the current tip.
@@ -60,7 +71,9 @@ impl NodeState {
         // 2. Push it if valid.
         // 3. Return `Ok(())`.
         // 4. Return the validation error if invalid.
-        todo!()
+        block.validate_against_tip(self.chain.last())?;
+        self.chain.push(block);
+        Ok(())
     }
 
     /// Return a block by hash.
@@ -69,6 +82,6 @@ impl NodeState {
         // 1. Iterate over the chain.
         // 2. Return the first block with a matching hash.
         // 3. Return `None` if missing.
-        todo!()
+        self.chain.iter().find(|block| block.hash == hash)
     }
 }

@@ -50,6 +50,20 @@ impl Block {
         // 3. For non-genesis, require previous hash equal to tip hash.
         // 4. Require height equal to tip height + 1.
         // 5. Return `Ok(())` if all checks pass.
-        todo!()
+        if self.hash.is_empty() || self.payload.is_empty() {
+            return Err(NodeError::InvalidBlock);
+        }
+
+        match tip {
+            None if self.height == 0 && self.previous_hash == "0" => Ok(()),
+            None => Err(NodeError::InvalidBlock),
+            Some(tip)
+                if self.previous_hash == tip.hash
+                    && tip.height.checked_add(1) == Some(self.height) =>
+            {
+                Ok(())
+            }
+            Some(_) => Err(NodeError::InvalidBlock),
+        }
     }
 }

@@ -15,7 +15,12 @@ pub fn derive_wallet_txid(
     // 1. Build the exact material documented above.
     // 2. Append input outpoints in the same order as `inputs`.
     // 3. Return `sha256::digest(material)`.
-    todo!()
+    let mut material =
+        format!("wallet-tx:{owner}|to:{recipient}|amount:{amount_sats}|fee:{fee_sats}|inputs:");
+    for input in inputs {
+        material.push_str(&format!("{}:{};", input.outpoint.txid, input.outpoint.vout));
+    }
+    sha256::digest(material)
 }
 
 /// Calculate fee rate as sats per virtual byte.
@@ -23,7 +28,10 @@ pub fn fee_rate_sats_per_vbyte(fee_sats: u64, vbytes: u64) -> Result<f64, Wallet
     // Steps:
     // 1. Reject `vbytes == 0` with `InvalidAmount`.
     // 2. Return `fee_sats as f64 / vbytes as f64`.
-    todo!()
+    if vbytes == 0 {
+        return Err(WalletError::InvalidAmount);
+    }
+    Ok(fee_sats as f64 / vbytes as f64)
 }
 
 /// Estimate a simple transaction weight in virtual bytes.
@@ -34,7 +42,9 @@ pub fn estimate_transaction_vbytes(input_count: usize, output_count: usize) -> u
     // Steps:
     // 1. Convert counts to `u64`.
     // 2. Return `10 + inputs * 68 + outputs * 31`.
-    todo!()
+    let input_count = input_count as u64;
+    let output_count = output_count as u64;
+    10 + input_count * 68 + output_count * 31
 }
 
 /// Estimate the fee for a transaction shape.
@@ -43,5 +53,5 @@ pub fn estimate_fee_sats(input_count: usize, output_count: usize, sats_per_vbyte
     // 1. Calculate vbytes with `estimate_transaction_vbytes`.
     // 2. Multiply by `sats_per_vbyte`.
     // 3. Return the fee.
-    todo!()
+    estimate_transaction_vbytes(input_count, output_count) * sats_per_vbyte
 }

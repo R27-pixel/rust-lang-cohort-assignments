@@ -16,7 +16,13 @@ impl NodeClient {
         // 1. Store height and tip hash.
         // 2. Start with empty accepted transaction and history lists.
         // 3. Set `reject_next` to `None`.
-        todo!()
+        Self {
+            accepted_transactions: Vec::new(),
+            height,
+            tip_hash: tip_hash.to_string(),
+            history: Vec::new(),
+            reject_next: None,
+        }
     }
 
     /// Submit a transaction to the node.
@@ -29,14 +35,24 @@ impl NodeClient {
         // 2. Otherwise clone or move the transaction into `accepted_transactions`.
         // 3. Also add it to node history.
         // 4. Return the accepted txid.
-        todo!()
+        if let Some(reason) = self.reject_next.take() {
+            return Err(WalletError::NodeRejected(reason));
+        }
+
+        let txid = transaction.txid.clone();
+        self.accepted_transactions.push(transaction.clone());
+        self.history.push(transaction);
+        Ok(txid)
     }
 
     /// Fetch current node status.
     pub async fn status(&self) -> Result<NodeStatus, WalletError> {
         // Steps:
         // 1. Return `NodeStatus { height, tip_hash }`.
-        todo!()
+        Ok(NodeStatus {
+            height: self.height,
+            tip_hash: self.tip_hash.clone(),
+        })
     }
 
     /// Return transactions from node history that involve `owner`.
@@ -45,6 +61,11 @@ impl NodeClient {
         // 1. Iterate over node history.
         // 2. Keep transactions where any output pays `owner`.
         // 3. Return the matching transactions.
-        todo!()
+        Ok(self
+            .history
+            .iter()
+            .filter(|transaction| transaction.pays_owner(owner))
+            .cloned()
+            .collect())
     }
 }
